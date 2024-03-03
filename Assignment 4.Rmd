@@ -1,0 +1,1041 @@
+---
+title: "Assignment 4_PCA"
+output: html_document
+date: "2024-03-01"
+---
+
+
+****1. Decide how many Principal Components (PCs) you want to keep and why  *****
+
+
+Starts at Line 92
+
+
+Reasons for choosing PC1, PC2 and PC3
+Standard Deviation
+[1] PC1, PC2, PC3: Have the majority of standard deviation (Total)
+
+
+Also cumulative proportion is high for PC1, PC2, PC3 and increasing further indicating ambiguity as it is the proportion of variance explained. 
+
+These prinicpal components can be used suitably as per their importance based on proportion. They indicate high correlation with dependent variable and can derive suitable meaning in dataset based on variance too
+
+For analysis refer to all the observations and inferences generated on the study
+
+**Hence choosing PC1, PC2, PC3 for further analysis**
+
+*****Q2. Explain the variate representation each PCs *******
+
+Line 92, reference where analysis starts and ends at visulization
+
+Also check line 682: barplot to show contribution of each variable towards PC1, PC2 and PC3
+
+
+Observation: (relation crossing 0.30):
+
+[1] PC1: fixed acidity (positive relation),citric acidity (positive relation), pH (negative) indicate highest relativity with PC1 either positive or negative.
+
+[2] PC2: free sulphur dioxide (negative), Total Sulphur dioxide (negative) and alcohol (+ve) relation.
+
+[3] PC3: Volatile acidity (-ve),alcohol has high relation (+ve), free sulphur dioxide (+ve)
+
+Inferences:
+
+alcohol and sulphur dioxide have high values in PC3 indicating +ve correlation between them.
+
+
+****3. Perform some visualization using PCs. (4 points)***
+Starts line 557
+
+
+Observation:
+[1] Attributes = 12
+[2] No. of rows= 1599
+[3] independent varaibles datatype = double
+[4] Dependent varaible datatpye = string
+
+```{R}
+#Library to read csv file
+library(readr)
+
+# Read the CSV file
+df <- read_csv("C:/Rutgers/Subjects/Spring Sem/Multivariate Analysis/Data/wine.csv")
+
+# converts the DataFrame df to a string representation
+str(df)
+#attaching variables of the data frame df
+attach(df)
+```
+
+
+
+
+```{R}
+#viewing independent variables
+df[1:11]
+```
+
+
+Calculating correlation of independent attributes:
+
+Observations:
+[1] Citric Acid and is positively correlated to fixed acidity = 0.67
+
+
+[2] pH is negatively correlated to fixed acidity = -0.68
+
+
+[3] In the following manner noting down all the crucial correlations:
+
+Positive:
+[a] density and fixed acidity
+[b] Total Sulphur dioxide and free sulphuric acid=0.66
+
+Negative:
+[a] Citric acid and Volatile acidity = -0.55
+[b] alcohol and density = -0.49
+
+```{r}
+#Get the Correlations between the measurements
+cor(df[1:11])
+```
+
+Goal:
+
+[1] Calculate std deviation of Principal components from the mean indicating some behavior of PC's based on attributes calculated
+
+example: High values shows high variability in Principle components
+
+Observations:
+
+Standard Deviation
+[1] PC1, PC2, PC3, PC4, PC5: Have the majority of standard deviation (Total)
+
+[2] PC11, PC10 have the lowest standard deviation indicating less meaning
+
+Rotation (n x k): [Matrix]
+[1] Indicates relation between original attributes and and Principal Components
+
+Observation: (relation crossing 0.30):
+
+[1] PC1: fixed acidity (positive relation),citric acidity (positive relation), pH (negative) indicate highest relativity with PC1 either positive or negative.
+
+[2] PC2: free sulphur dioxide (negative), Total Sulphur dioxide (negative) and alcohol (+ve) relation.
+
+[3] PC3: Volatile acidity (-ve),alcohol has high relation (+ve), free sulphur dioxide (+ve)
+
+Inferences:
+
+alcohol and sulphur dioxide have high values in PC3 indicating +ve correlation between them.
+
++ve and -ve range in each PC are relation of variables with respective PC's and their correlation with each other.
+
+PC1, PC2, PC3, PC4 have majority of proportion of variance indicating to be evaluated further.
+
+But cumulative proportion is low for PC1, PC2, PC3 and increasing further indicating ambiguity as it is the proportion of variance explained. 
+
+```{r}
+# Using prcomp to compute the principal components (eigenvalues and eigenvectors). With scale=TRUE, variable means are set to zero, and variances set to one
+
+#prcomp: return PCA values of dataframe 
+#scale: Scaling variables before performing PCA to obtain uniformity in the values
+df_pca <- prcomp(df[1:11],scale=TRUE)
+df_pca
+summary(df_pca)
+```
+
+Checking attributes in PCA performed
+
+```{r}
+#attributes(df_pca) below mentioned can be viewed by this function
+attributes(df_pca)
+```
+
+Checking sample scores of PC's in x
+```{R}
+
+# sample scores stored in df_pca$x
+df_pca$x
+```
+
+Checking eigen vectors:
+
+To check composition of each attribute in respective PC's
+
+[1] 
+
+```{R}
+# loading (eigenvectors) are stored in df_pca$rotation
+df_pca$rotation
+```
+
+
+```{R}
+# variable means stored in df_pca$center
+df_pca$center
+```
+```{r}
+# variable standard deviations stored in df_pca$scale
+df_pca$scale
+```
+
+
+Observation:
+
+Eigen values are the center data points in the vector which do not change a lot after rotation.
+
+
+Calculating Eigen vector values/Standard Deviation information contained by each PC's
+Function: df_pca$sdev^2
+
+Squaring to penalize and show the impact of each std deviation
+
+[1] PC1: contains the highest standard deviation: 3.09913244 
+
+[2] PC2, PC3, PC4, PC5:  1.92590969 1.55054349 1.21323253 0.95929207 
+Following principal components contain high amount of standard deviation information.
+```{R}
+# singular values (square roots of eigenvalues) stored in df$sdev
+# A table containing eigenvalues and %'s accounted, follows
+# Eigenvalues are sdev^2
+
+(eigen_df <- df_pca$sdev^2)
+names(eigen_df) <- paste("PC",1:11,sep="") #formatting PC with column no. for respective PC's
+eigen_df
+
+```
+
+
+Summation of eigen_df calculated with standard deviation and eigen values always amount to the number of Principal components present
+```{r}
+sumlambdas <- sum(eigen_df)
+sumlambdas
+```
+
+
+Scaling/Proportioning the Principal component eigen values by diving by the sum values of eigen values calculated for each PC's
+
+Even with scaling we can observe that
+
+[1] PC1, PC2, PC3, PC4, PC5 hold the majority percentage of eigen values
+
+starting in order from: 28%, 17%, 14%, 11%, 8%
+
+[2] Rest of the PC's do not hold high proportion of std deviation indicating less meaning.
+```{R}
+propvar <- eigen_df/sumlambdas
+propvar
+```
+
+
+cumsum(propvar): is used to add the values (Indicating increase in cumulative proportion) of previous Principal components to the next Principal component totalling to 1 as the values are scaled from 0 to 1
+
+Barplot to explain cumulative contribution of each PC's
+
+Obervation:
+
+[1] PC1 to PC4 have highest contribution
+[2] After PC5 the contribution is minimal which only amounts to only 0.2 percent of entire values
+
+```{r}
+library(waterfall)
+
+cumvar_df <- cumsum(propvar)
+cumvar_df
+
+# Load the waterfall package
+library(waterfall)
+
+# Create a data frame for the waterfall chart
+waterfall_data <- data.frame(
+  labels = paste("PC", 1:length(propvar)),
+  values = propvar
+)
+
+# Calculate the cumulative sum of the proportion of variance
+cumulative_propvar <- cumsum(waterfall_data$values)
+
+# Plot the waterfall chart with rotated x-axis labels
+barplot(cumulative_propvar, names.arg = waterfall_data$labels, 
+        main = "Waterfall Chart of Cumulative Proportion of Variance",
+        xlab = "Principal Component", ylab = "Cumulative Proportion of Variance",
+        las = 2, cex.names = 0.8)  # las = 2 for vertical labels, cex.names to adjust label size
+
+
+#Based on the cumulative plot we can select PC1 to PC5 as they indicate high contribution to the total
+```
+
+
+eigen_df: This seems to be a data frame containing information about eigenvectors or eigenvalues from some analysis.
+
+propvar: This is likely a vector containing the proportion of variance explained by each principal component.
+
+cumvar_df: This could be another data frame containing cumulative proportion of variance explained by each principal component.
+
+rbind(eigen_df,propvar,cumvar_df): to combine above mentioned dataframes
+
+Observation:
+
+matlambdas: (Combined dataframe)
+[1] PC1 and PC2 have highest proportion of eigen values indicating highest variance captured
+
+[2] Hence proportion of variance is highest for PC1 and PC2
+
+
+Second Observation is for original PCA vector: (same as above just not combined hence showing lesser values)
+
+[1] PC1 and PC2 have highest proportion of eigen values indicating highest variance captured
+
+[2] Hence proportion of variance is highest for PC1 and PC2
+```{R}
+
+#Combining mulltiple dataframes of PCA calculation done
+matlambdas <- rbind(eigen_df,propvar,cumvar_df)
+
+#Assigning row names to combined data frame
+rownames(matlambdas) <- c("Eigenvalues","Prop. variance","Cum. prop. variance")
+
+#rounding values of combined dataframe to 4 decimal points
+round(matlambdas,4)
+
+summary(matlambdas)
+summary(df_pca)
+```
+
+
+
+Mapping Dependent variable with PC1 and PC2:
+
+Observations:
+
+[1] Quality=Bad are both negative and positive components of PC1 and PC2 but more towards negative
+
+[2] Quality = Good are capturing both negative and positive value in most of the Principal Components but more towards positive
+```{R}
+# Identifying the scores by their Quality of wine 
+dftyp_pca <- cbind(data.frame(quality),df_pca$x)
+dftyp_pca
+```
+
+
+Now after aggregating:
+
+Obervations:
+
+[1] Quality = Bad is towards -ve in PC1, PC2, PC3. Having highest varaibility in PC3 and PC2
+
+PC3: had correlation with variations Alcohol
+
+refer to correlations mapped earlier to decode PCA and analyse to get meaning from variables.
+
+[2] PC2: free sulphur dioxide (negative), Total Sulphur dioxide (negative) and alcohol (+ve) relation.
+
+[3] PC3: Volatile acidity (-ve),alcohol has high relation (+ve), free sulphur dioxide (+ve)
+```{R}
+# Means of scores for all the PC's classified by Quality status
+tabmeansPC <- aggregate(dftyp_pca[,2:6],by=list(quality=df$quality),mean)
+tabmeansPC
+```
+
+
+sorted indices to rearrange the rows of the data frame tabmeansPC, resulting in a new data frame where the rows are sorted based on the values in the "quality" column in descending order.
+
+
+```{r}
+tabmeansPC <- tabmeansPC[rev(order(tabmeansPC$quality)),]
+tabmeansPC
+```
+
+2- indicates quality = good
+1- indicates quality = bad
+
+[1] Good quality wine is displaying +ve correlation
+
+[2] Good quality wine is displaying -ve correlation
+
+[3] also PC2 and PC3 have highest varibility with PC2 and PC3 indicating high variability for good and bad wine indicating a good criteria to differentiate and understand relation of variables with dependent variable
+
+```{r}
+tabfmeans <- t(tabmeansPC[,-1])
+tabfmeans
+```
+
+
+Mapped values:
+
+[1] Good quality wine is displaying +ve correlation
+
+[2] Good quality wine is displaying -ve correlation
+
+[3] also PC2 and PC3 have highest varibility with PC2 and PC3 indicating high variability for good and bad wine indicating a good criteria to differentiate and understand relation of variables with dependent variable
+
+```{R}
+colnames(tabfmeans) <- t(as.vector(tabmeansPC[1]$quality))
+tabfmeans
+```
+
+
+
+dftyp_pca[,2:11]: This part selects columns 2 to 11 (inclusive) from the data frame 
+
+dftyp_pca. It subsets the data frame to include only these specific columns.
+
+by: This argument specifies the grouping variable or variables. In this case, it's specified as list(quality = df$quality), which means that the data will be grouped by the values of the "quality" column from the data frame df.
+
+sd (Standard deviation): This is the function that will be applied to each subset of the data. In this case, it's sd, which calculates the standard deviation.
+
+after calculating standard deviation, transposition is done
+
+viewing std deviation of Dependent variable with respect to PC's.
+
+Observation:
+
+
+Chosen PC's:
+[1] PC1 to PC5 have values above 1 indicating high std deviation with respect to dependent variable
+```{r}
+# Standard deviations of scores for all the PC's classified by Quality status
+tabsdsPC <- aggregate(dftyp_pca[,2:11],by=list(quality=df$quality),sd)
+
+#Transpose the resulting subset by transposition on rows and columns of PC's and Quality
+tabfsds <- t(tabsdsPC[,-1])
+
+colnames(tabfsds) <- t(as.vector(tabsdsPC[1]$quality))
+tabfsds
+```
+
+t-test of PC1 to PC5 with dependent varaible to obtain mean based on t-value and p-value
+
+T-test: t-test of PC1 to PC5 with dependent varaible to obtain mean based on t-value and p-value:
+
+
+Observations and Inferences:
+[1] PC1: The ratio of variances between the "bad" and "good" quality groups is not significantly different from 1 
+
+Inference (PC1):
+The variability in PC1 scores differs significantly between the "bad" and "good" quality groups, indicating that PC1 may capture important differences related to wine quality.
+
+[2] PC2: The ratio of variances between the two quality groups is not significantly different from 1 (p-value = 0.06941). 
+
+
+
+
+
+[3] PC3: The ratio of variances between the two quality groups is significantly different from 1 (p-value = 0.0001727). 
+
+
+Inference (PC3):
+PC3 also exhibits significant differences in variability between the two quality groups, suggesting that PC3 may be informative for distinguishing between "bad" and "good" quality wines.
+
+
+
+[4] PC4: The ratio of variances between the two quality groups is significantly different from 1 (p-value < 0.00000000000000022).
+
+
+
+Inference (PC4):
+
+PC4 shows substantial variability differences, further indicating its potential relevance for discriminating between wine qualities.
+
+
+
+[5] PC5: The ratio of variances between the two quality groups is not significantly different from 1 (p-value = 0.1089). 
+
+
+Conclusion:
+In summary, PC1, PC3, and PC4 exhibit significant differences in variances between the "bad" and "good" quality groups, indicating potential heterogeneity in variances between the two groups for these components. PC2 and PC5 do not show significant differences in variances.
+```{R}
+t.test(PC1~df$quality,data=dftyp_pca)
+t.test(PC2~df$quality,data=dftyp_pca)
+t.test(PC3~df$quality,data=dftyp_pca)
+t.test(PC4~df$quality,data=dftyp_pca)
+t.test(PC5~df$quality,data=dftyp_pca)
+```
+
+
+Performing F-test to calculate Variance for Principle components w.r.t Dependent variable:
+
+
+Observations:
+
+PC1: The F-test result shows a p-value of 0.01129, indicating a significant difference in variances between the "bad" and "good" quality groups for PC1.
+
+The ratio of variances is estimated to be approximately 0.8349, suggesting that the variance of PC1 scores is lower in the "good" quality group compared to the "bad" quality group.
+
+
+PC2: With a p-value of 0.06941, the F-test result for PC2 does not show a significant difference in variances between the quality groups. The estimated ratio of variances is approximately 1.1372, indicating a slight increase in variance in the "good" quality group, although not statistically significant at conventional levels.
+
+PC3: The F-test result yields a highly significant p-value of 0.0001727, indicating a substantial difference in variances between the quality groups for PC3. The estimated ratio of variances is approximately 0.765, suggesting a lower variance in the "good" quality group compared to the "bad" quality group.
+
+PC4: Similar to PC3, the F-test result for PC4 indicates a highly significant difference in variances between the quality groups (p-value < 0.00000000000000022). The estimated ratio of variances is approximately 1.8615, suggesting a higher variance in the "good" quality group compared to the "bad" quality group.
+
+PC5: The F-test result for PC5 yields a p-value of 0.1089, indicating no significant difference in variances between the quality groups. The estimated ratio of variances is approximately 1.1202, suggesting a slightly higher variance in the "good" quality group, although not statistically significant.
+
+
+Conclusion:
+
+In summary, PC1, PC3, and PC4 exhibit significant differences in variances between the "bad" and "good" quality groups, while PC2 and PC5 do not show significant differences. These results provide insights into the variability of principal component scores across different wine quality groups.
+
+```{R}
+options(scipen=999)
+## F ratio tests
+var.test(PC1~df$quality,data=dftyp_pca)
+var.test(PC2~df$quality,data=dftyp_pca)
+var.test(PC3~df$quality,data=dftyp_pca)
+var.test(PC4~df$quality,data=dftyp_pca)
+var.test(PC5~df$quality,data=dftyp_pca)
+```
+
+Goal:
+Levene's tests (one-sided):
+The one-sided p-value indicates the probability of observing a result as extreme as the one observed, assuming that the variances of the two groups are different in the direction of interest.
+
+In summary, this code segment is useful for assessing whether there are significant differences in variances between the "bad" and "good" quality groups for each principal component, providing insights into the homogeneity of variances across different quality groups.
+
+
+Observations and Inferences: Chosen PC's: PC1, PC2, PC3, PC4, PC5
+
+PC1:
+
+The F value is 9.7234 with a corresponding p-value of 0.001852.
+The p-value is significant at the 0.01 level.
+Inference: There is evidence to suggest that the variances of PC1 scores between the two groups ("bad" and "good" quality) are significantly different.
+
+
+PC2:
+
+The F value is 3.0446 with a corresponding p-value of 0.0812.
+The p-value is not significant at the 0.05 level.
+Inference: There is no strong evidence to suggest that the variances of PC2 scores between the two groups are significantly different.
+
+
+PC3:
+
+The F value is 8.864 with a corresponding p-value of 0.002952.
+The p-value is significant at the 0.01 level.
+Inference: There is evidence to suggest that the variances of PC3 scores between the two groups are significantly different.
+
+
+
+PC4:
+
+The F value is 4.6593 with a corresponding p-value of 0.03103.
+The p-value is significant at the 0.05 level.
+Inference: There is evidence to suggest that the variances of PC4 scores between the two groups are significantly different.
+
+
+
+PC5:
+
+The F value is 2.518 with a corresponding p-value of 0.1128.
+The p-value is not significant at the 0.05 level.
+Inference: There is no strong evidence to suggest that the variances of PC5 scores between the two groups are significantly different.
+
+```{R}
+# Levene's tests (one-sided)
+library(car)
+
+#leveneTest function takes the formula PC(1 to 5)~df$quality where PC1 represents the scores of PC1 to 5 and df$quality represents the quality groups. 
+
+#eg: (p_PC1_1sided <- LTPC1[[3]][1]/2 : extracts the p-value from the result of the Levene's test for PC1 and divides it by 2 to get a one-sided p-value. 
+
+(LTPC1 <- leveneTest(PC1~df$quality,data=dftyp_pca))
+(p_PC1_1sided <- LTPC1[[3]][1]/2)
+(LTPC2 <- leveneTest(PC2~df$quality,data=dftyp_pca))
+(p_PC2_1sided=LTPC2[[3]][1]/2)
+(LTPC3 <- leveneTest(PC3~df$quality,data=dftyp_pca))
+(p_PC3_1sided <- LTPC3[[3]][1]/2)
+(LTPC4 <- leveneTest(PC4~df$quality,data=dftyp_pca))
+(p_PC4_1sided <- LTPC4[[3]][1]/2)
+(LTPC5 <- leveneTest(PC5~df$quality,data=dftyp_pca))
+(p_PC5_1sided <- LTPC5[[3]][1]/2)
+```
+
+
+Observations: 
+
+
+Quality= good
+
+PC2 and PC3: seems to be correlated to Good quality wine, as green data points are densely populated towards positive value of PC2 and PC3  x-axis, y-axis
+
+Quality = bad
+
+seems to be uniformly distributed but skewed little towards negative scale of x-axis(PC2).
+
+
+
+****Visualization ****
+```{R}
+# Plotting the scores for the first and second components
+plot(dftyp_pca$PC2, dftyp_pca$PC3, 
+     pch = ifelse(dftyp_pca$quality == "good", 21, 2),  # Circles with a border for "Good", triangles for "Bad"
+     bg = ifelse(dftyp_pca$quality == "good", "#006400", "red"),  # Darker green for "Good" points
+     col = ifelse(dftyp_pca$quality == "good", "green", "red"),  # Color assignment for the border
+     cex = 1,  # Normal size for both "Good" and "Bad"
+     xlab = "PC2", ylab = "PC3", main = "Wine Quality against PC1 & PC2")
+abline(h = 0)
+abline(v = 0)
+legend("bottomleft", legend = c("Good", "Bad"), pch = c(21, 2), col = c("green", "red"), pt.bg = c("#006400", NA))
+
+
+```
+
+Observations: log(eigen value)
+
+[1] Seems like log(Component varaince) drops below 0 after PC5
+[2] At PC10 log seems to drop at -2
+
+```{R}
+plot(log(eigen_df), xlab = "Component number",ylab = "log(Component variance)", type="l",main = "Log(eigenvalue) diagram")
+print(summary(df_pca))
+```
+
+
+setting up axis for next plot
+
+steps:
+
+[1] covariance of x attribute of pca data frame and apply diagonal
+
+[2] then calculate range for upper and lower bound of x axis
+```{R}
+
+diag(cov(df_pca$x))
+xlim <- range(df_pca$x[,1])
+df_pca$x[,1]
+df_pca$x
+```
+
+
+Observations:
+
+[1] PC1 to PC4 seem to have variance above one indicating meaning and should be visualized and decoded further
+```{r}
+
+plot(df_pca, xlab = "Principal Component")
+
+```
+```{R}
+#get the original value of the data based on PCA
+center <- df_pca$center #loading center values of PCA during transformation
+
+scale <- df_pca$scale  # retrieves the scaling values used during the PCA transformation.
+
+
+new_df <- as.matrix(df[1:11])
+new_df
+
+
+```
+
+
+scale(new_df,center=center, scale=scale):
+
+scales the original data new_df using the centering and scaling values obtained during PCA.
+ 
+ 
+%*%df_pca$rotation[,1]:  
+
+performs matrix multiplication of the scaled data with the first principal component obtained from PCA, which essentially projects the data onto the first principal component.
+
+
+From this we can further extract information and contribution of each attribute in respective principal components.
+```{R}
+drop(scale(new_df,center=center, scale=scale)%*%df_pca$rotation[,1])
+predict(df_pca)[,1]
+
+
+```
+
+Univariate plot to understand :
+
+[1] Based on barplot PC1 is good indicator for bad quality wine as most of the data points for bad quality wine are above max line as outliers
+
+
+[2] Based on barplot PC2 is good indicator for good quality wine as most of the data points for good quality wine are below minimum line as outliers
+
+
+[3]  Based on barplot PC3 is good indicator for good quality wine as most of the data points for good quality wine are above max line as outliers 
+```{R}
+#The aboved two gives us the same thing. predict is a good function to know.
+df$quality <- as.factor(df$quality)
+out <- sapply(1:5, function(i){plot(df$quality,df_pca$x[,i],xlab=paste("PC",i,sep=""),ylab="quality")})
+pairs(df_pca$x[,1:5], ylim = c(-6,4),xlim = c(-6,4),panel=function(x,y,...){text(x,y,df$quality)})
+```
+
+
+
+****Explain the variate representation each PCs****
+Multivariate plot:
+
+This used to see contribution of each variable in PC1 to understand variability in data
+
+PC1:
+[1] fixed acidity, citric acidity and pH are highest contributors towards PC1
+
+
+PC2:
+[2] Free sulfur dioxide and total sulfur dioxide are the biggest contributors.
+
+
+Hence we can deduce that wine quality is good when PC2 is low which means Free sulfur dioxide content and total sulfur dioxide content also should be low
+
+
+PC3:
+[3] Alcohol and volatile acidity are the biggest contributors to PC3
+
+
+Hence we can deduce that wine quality is good when PC3 is high which means Alcohol content and volatile acid content also should be high
+```{r}
+library(ggplot2)
+
+# Extract the loadings from the rotation matrix
+loadings <- abs(df_pca$rotation[, 1])  # Assuming you want to visualize the loadings for the first principal component
+
+# Create a data frame for plotting
+loadings_df <- data.frame(Attribute = colnames(new_df), Loading = loadings)
+
+# Plot the contributions of each attribute to the first principal component
+ggplot(loadings_df, aes(x = Attribute, y = Loading)) +
+  geom_bar(stat = "identity") +
+  labs(x = "Attribute",
+       y = "Loading (Absolute Value)",
+       title = "Contribution of Attributes to First Principal Component") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Rotate x-axis labels for better readability
+
+
+
+
+# Extract the loadings from the rotation matrix for PC2
+loadings_pc2 <- abs(df_pca$rotation[, 2])
+loadings_df_pc2 <- data.frame(Attribute = colnames(new_df), Loading = loadings_pc2)
+
+# Extract the loadings from the rotation matrix for PC3
+loadings_pc3 <- abs(df_pca$rotation[, 3])
+loadings_df_pc3 <- data.frame(Attribute = colnames(new_df), Loading = loadings_pc3)
+
+# Plot the contributions of each attribute to PC2
+ggplot(loadings_df_pc2, aes(x = Attribute, y = Loading)) +
+  geom_bar(stat = "identity") +
+  labs(x = "Attribute",
+       y = "Loading (Absolute Value)",
+       title = "Contribution of Attributes to Second Principal Component") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Rotate x-axis labels for better readability
+
+# Plot the contributions of each attribute to PC3
+ggplot(loadings_df_pc3, aes(x = Attribute, y = Loading)) +
+  geom_bar(stat = "identity") +
+  labs(x = "Attribute",
+       y = "Loading (Absolute Value)",
+       title = "Contribution of Attributes to Third Principal Component") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Rotate x-axis labels for better readability
+
+```
+```{R}
+# Better Ways to Visualize
+
+library(factoextra)
+library(FactoMineR)
+library(ggfortify)
+library(psych)
+library(corrplot)
+library(devtools)
+```
+
+
+
+Based on correlation plot below we can see that alcohol, citric acid, volatile acid and sulfur dioxide are skewed towards left side which is correlated towards either good or bad value of dependent variable as per extreme skewedness.
+```{R}
+# Correlation
+pairs.panels(df[,-1],
+             gap = 0,
+             bg = c("red", "blue")[df$quality],
+             pch=21)
+```
+
+
+
+PC2, PC3, PC4 and PC5 seem to be highly informative as they are either skewed towards left or right unlike PC1 which uniform and would not help us to predict dependent variable
+
+```{R}
+pairs.panels(df_pca$x,
+             gap=0,
+             bg = c("red", "blue")[df$quality],
+             pch=21)
+
+```
+
+
+
+As per the below plot we can infer that PC1-PC5 is enough for analyzing data as they contain 85% of varainces which can be used for prediction and analysis
+
+```{R}
+
+
+fviz_eig(df_pca, addlabels = TRUE)
+```
+
+
+
+As we have analyzed that PC2 and PC3 are good indicators of wine quality.
+
+
+We can observe that alcohol and acid based variables are in positive curve of PC2 and PC3 indicating that good quality wine is majorly dependent on these attributes to be good.
+```{R}
+library(factoextra)
+
+# Plot variables' contributions to both PC2 and PC3
+plot_pc2_pc3 <- fviz_pca_var(df_pca, axes = c(2, 3), col.var = "cos2",
+                              gradient.cols = c("#FFCC00", "#CC9933", "#660033", "#330033"),
+                              repel = TRUE) +
+  ggtitle("PC2 and PC3 - Variance Contributions")
+
+# Display the plot
+plot_pc2_pc3
+
+```
+            repel = TRUE)
+
+
+
+
+```{r}
+# Different PCA Method. 
+res.pca <- PCA(df[, 1:11], graph = FALSE)
+print(res.pca)
+```
+
+
+Dim.1:
+
+Free Sulfur Dioxide (26.375087)
+Fixed Acidity (23.9428401)
+Citric Acid (21.4954313)
+Dim.2:
+
+Residual Sugar (7.402766)
+Volatile Acidity (7.558677)
+Free Sulfur Dioxide (1.221086)
+Dim.3:
+
+Fixed Acidity (1.5203278)
+Volatile Acidity (20.2466277)
+Free Sulfur Dioxide (18.3863327)
+Dim.4:
+
+Chlorides (44.3815454)
+Residual Sugar (13.8974295)
+Volatile Acidity (0.6234647)
+Dim.5:
+
+Residual Sugar (53.6035258)
+Free Sulfur Dioxide (2.5329353)
+Volatile Acidity (4.7844791)
+Top 3 Attributes with Highest Negative Loadings:
+
+Dim.1:
+
+Volatile Acidity (-0.42001233)
+Chlorides (-0.37364637)
+Free Sulfur Dioxide (-0.06365298)
+Dim.2:
+
+Fixed Acidity (-0.1533525)
+Citric Acid (-0.2106517)
+Chlorides (-0.2054617)
+Dim.3:
+
+Volatile Acidity (-0.5602970)
+Fixed Acidity (-0.1535361)
+Citric Acid (0.2966672)
+Dim.4:
+
+Fixed Acidity (-0.25291627)
+Citric Acid (-0.08747670)
+Volatile Acidity (0.08697170)
+Dim.5:
+
+Fixed Acidity (-0.08091468)
+Citric Acid (-0.05736810)
+Volatile Acidity (0.21423615)
+
+
+
+
+
+
+
+PC1: has high cosine similarity with fixed acidity, citric acid, density and pH but still it is evenly distributed hence not meaningful
+
+
+PC2: has high cosine similarity with total and free sulfuric acid but as per previous analysis high PC2 means bad quality wine hence these attributes contribute towards bad quality wine
+
+PC3: has high cosine similarity to alcohol and volatile acidity, this combination is correlated to good quality wine
+```{R}
+
+library(corrplot)
+
+# Compute the cos2 values from the PCA results
+cos2_matrix <- res.pca$var$cos2
+
+# Plot the correlation matrix using corrplot
+corrplot(cos2_matrix, is.corr = FALSE)
+
+
+```
+
+
+Below plot confirms on our hypothesis that alcohol and sulfur components contribute towards PC3 and PC2
+```{R}
+# Total cos2 of variables on Dim.3 and Dim.2
+#A high cos2 indicates a good representation of the variable on the principal component. 
+#In this case the variable is positioned close to the circumference of the correlation circle.
+#A low cos2 indicates that the variable is not perfectly represented by the PCs. 
+#In this case the variable is close to the center of the circle.
+
+fviz_cos2(res.pca, choice = "var", axes = 2:3)
+
+```
+
+Below plot also confirms
+
+as alcohol is positive with PC3 but negative with PC2 indicating good quality wine has high alcohol content 
+
+```{R}
+fviz_pca_var(res.pca, col.var = "cos2",
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), 
+             repel = TRUE,
+             axes = c(3, 2) # Specify PC3 and PC4
+             )
+```
+
+
+Hypothesis: High alcohol content, density and volatile acidity are contributors towards good quality wine as per observation as these categories are above mean line
+```{R}
+# Contributions of variables to PC1
+fviz_contrib(res.pca, choice = "var", axes = 3, top = 10)
+```
+
+
+As per descriptive analysis I can infer these values
+
+For PC1:
+
+Fixed acidity (correlation: 0.86140602)
+pH (correlation: -0.77198543)
+Density (correlation: 0.69599339)
+For PC2:
+
+Total sulfur dioxide (correlation: 0.79031776)
+Free sulfur dioxide (correlation: 0.71271338)
+Volatile acidity (correlation: -0.42001233)
+For PC3:
+
+Residual sugar (correlation: 0.71708742)
+Alcohol (correlation: -0.53593092)
+Chlorides (correlation: 0.37364637)
+```{R}
+# Description of PC
+
+res.desc <- dimdesc(res.pca, axes = c(1,2,3,4,5), proba = 0.05)
+# Description of dimension 1
+res.desc$Dim.1
+res.desc$Dim.2
+res.desc$Dim.3
+res.desc$Dim.4
+res.desc$Dim.5
+```
+```{R}
+# Graph of Indiviuals
+ind <- get_pca_ind(res.pca)
+ind
+```
+```{r}
+## Principal Component Analysis Results for individuals
+##  ===================================================
+##   Name       Description                       
+## 1 "$coord"   "Coordinates for the individuals" 
+## 2 "$cos2"    "Cos2 for the individuals"        
+## 3 "$contrib" "contributions of the individuals"
+#To get access to the different components, use this:
+
+# Coordinates of individuals
+head(ind$coord)
+```
+
+
+
+As per below plot (area curve)
+
+High value of of PC3 indicates good score of wine and drops quickly below elbow point at 0.25
+
+```{R}
+fviz_cos2(res.pca, choice = "ind", axes = 3)
+
+```
+
+
+Finally we can confirm on our thesis that PC3 is strong indicator of good quality wine as the circle highlighting good quality wine is more towards positive of PC3 
+```{r}
+fviz_pca_ind(res.pca,
+             geom.ind = "point", # show points only (not "text")
+             col.ind = df$quality, # color by groups
+             palette = c("#00AFBB", "#E7B800", "#FC4E07"),
+             addEllipses = TRUE, # Concentration ellipses
+             axes = c(2, 3), # PC2 and PC3
+             legend.title = "Groups"
+             )
+
+```
+
+
+
+
+In the below plot we can infer that bad quality wine is towrds negative coordinates of PC2 w.r.t to PC1 showing negative correlation with quality of wines
+```{R}
+
+fviz_pca_ind(res.pca, geom.ind = "point", col.ind = df$quality, 
+             palette = c("#00AFBB", "#E7B800", "#FC4E07"),
+             addEllipses = TRUE, ellipse.type = "confidence",
+             legend.title = "Groups"
+             )
+```
+
+
+PC4 and PC5 are not good indicators of quality of wine as the data points are evenly distribute towards center and also has random outliers.
+```{R}
+fviz_pca_ind(res.pca,
+             label = "none", # hide individual labels
+             habillage = df$quality, # color by groups
+             addEllipses = TRUE, # Concentration ellipses
+             axes = c(4, 5), # PC4 and PC5
+             palette = "jco"
+             )
+```
+
+
+
+
+Alcohol is shows contribution towards good quality wine, along with citric acid which shows little contribution.
+
+Hence we can say that these 2 parameters indicate good rating for wine
+
+
+Whereas density and volatile acidity show negative correlation and indicate bad quality wine
+```{R}
+fviz_pca_biplot(res.pca, 
+                # Individuals
+                geom.ind = "point",
+                fill.ind = df$quality, col.ind = "black",
+                pointshape = 21, pointsize = 2,
+                palette = "jco",
+                addEllipses = TRUE,
+                # Variables
+                alpha.var = "contrib", col.var = "contrib",
+                gradient.cols = "RdYlBu",
+                axes = c(2, 3),  # PC2 and PC3
+                legend.title = list(fill = "Quality", color = "Contrib")
+                )
+
+```
